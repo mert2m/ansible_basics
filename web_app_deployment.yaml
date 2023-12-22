@@ -1,0 +1,36 @@
+# Web Application Deployment
+# This playbook deploys a Flask web application.
+
+---
+- name: Web Application Deployment
+  hosts: target_servers
+  become: yes
+
+  vars:
+    app_directory: /var/www/myapp
+
+  tasks:
+    - name: Create directory for the application
+      file:
+        path: "{{ app_directory }}"
+        state: directory
+      become: yes
+
+    - name: Clone application source code from GitHub
+      git:
+        repo: https://github.com/username/web_application.git
+        dest: "{{ app_directory }}"
+      become: yes
+
+    - name: Create Python Virtual Environment and Install Requirements
+      pip:
+        requirements: "{{ app_directory }}/requirements.txt"
+        virtualenv: "{{ app_directory }}/venv"
+      become: yes
+
+    - name: Start the application
+      command: "{{ app_directory }}/venv/bin/python {{ app_directory }}/app.py"
+      async: 60
+      poll: 0
+      become: yes
+      ignore_errors: yes
