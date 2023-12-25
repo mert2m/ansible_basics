@@ -1,0 +1,53 @@
+# Installation of PostgreSQL and Nginx
+# This playbook creates a PostgreSQL database, sets up a user, installs Nginx, and configures it.
+
+---
+- name: Installation of PostgreSQL and Nginx
+  hosts: database_servers:web_servers
+  become: yes
+  
+  vars:
+    db_name: mydatabase
+    db_user: myuser
+    db_password: mypassword
+
+  tasks:
+    - name: Install PostgreSQL Server
+      apt:
+        name: postgresql
+        state: present
+      become: yes
+
+    - name: Create PostgreSQL Database
+      postgresql_db:
+        name: "{{ db_name }}"
+        state: present
+      become: yes
+
+    - name: Create PostgreSQL User
+      postgresql_user:
+        db: "{{ db_name }}"
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        priv: "*.*:ALL"
+        state: present
+      become: yes
+
+    - name: Install Nginx Server
+      apt:
+        name: nginx
+        state: present
+      become: yes
+
+    - name: Upload Nginx Configuration File
+      copy:
+        src: /your_location/nginx.conf
+        dest: /etc/nginx/nginx.conf
+      become: yes
+
+    - name: Start Nginx Service and Enable on Boot
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+      become: yes
